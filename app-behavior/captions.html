@@ -1,0 +1,32 @@
+<h1>{{ page.title }}</h1>
+<article class="bcls-article">
+  <summary>{{ page.description }}</summary>
+
+  <section class="bcls-section">
+    <h2 id="Overview">Overview</h2>
+    <p>In VideoCloud, you have the capability to add labels to each track made available to apps through the Playback API. These labels are essential for allowing users to select the desired text track for playback.</p>
+  </section>
+  <section class="bcls-section">
+    <h2 id="label-property-usage">Label Property Usage</h2>
+    <p>When adding text tracks, ensure that the label property is used. This property serves as a user-friendly identifier for text tracks.</p>
+ </section>
+ <section class="bcls-section">
+    <h2 id="handling-empty-labels">Handling Empty Labels</h2>
+    <p>If the label property is empty, the platform displays the locally available translation for the language code associated with the text track.</p>
+</section>
+<section class="bcls-section">
+    <h2 id="handling-empty-labels">Managing Multiple Tracks without Labels</h2>
+    <p>In cases where multiple text tracks exist for the same language (e.g., en-US, en-GB) and none of them have labels, the following format is used for the text track title:</p>
+
+    <ol>
+        <li><strong>Language Variation:</strong> Include the language variation in the title (e.g., "English (United States)", "English (British)").</li>
+        <li><strong>Text Track Type:</strong> Also, include the type of text track in the title (e.g., "Captions (en)", "Subtitle (en-GB)").
+        </li>
+    </ol>
+</section>
+<section class="bcls-section">
+    <h2 id="handling-empty-labels">Applicability</h2>
+    <p>This labeling system is applicable to Player A and Player E.</p>
+</section>
+<p>By following these guidelines for labeling text tracks, you can provide a seamless user experience for selecting and displaying text tracks in Brightcove Beacon apps players.</p>
+</article>
