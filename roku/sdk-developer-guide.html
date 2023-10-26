@@ -1,0 +1,231 @@
+<h1>{{ page.title }}</h1>
+<article class="bcls-article">
+  <summary>{{ page.description }}</summary>
+
+  <section class="bcls-section">
+    <h2 id="overview">Overview</h2>
+    <p>The Brightcove Roku SDK is a Roku <a href="https://developer.roku.com/en-gb/docs/references/scenegraph/control-nodes/componentlibrary.md">ComponentLibrary</a> package that can be imported and loaded into a Roku channel, allowing easy access to Brightcove’s Playback services.</p>
+  </section>
+  <section class="bcls-section">
+    <h2 id="components">Components</h2>
+    <p>The Brightcove Roku SDK package contains the following components:</p>
+    <ul>
+        <li><strong>bcPlayer</strong> - Allows for Brightcove and external sources video playback using Roku’s Video node.</li>
+        <li><strong>bcAPI</strong> - Provides independent access to Brightcove’s Playback API and an interface for general HTTP requests.</li>
+        <li><strong>Dialog</strong> - Customizable <a href="https://developer.roku.com/en-gb/docs/references/scenegraph/standard-dialog-framework-nodes/standard-dialog.md">StandardDialog</a> node.</li>
+        <li><strong>Logger</strong> - Customizable logger node.</li>
+        <li><strong>Utils</strong> - Provides general Brightscript helping functions.</li>
+    </ul>
+  </section>
+  <section class="bcls-section">
+    <h2 id="features">Features</h2>
+    <p>The Brightcove Roku SDK package has the following features:</p>
+    <ul>
+        <li>OOTB UI/UX.</li>
+        <li>VOD and Live streams playback support.</li>
+        <li>Native <a href="https://developer.roku.com/en-gb/docs/developer-program/media-playback/trick-mode/hls-and-dash.md">HLS/DASH</a> seek thumbnails support.</li>
+        <li>Widevine and Playready <a href="https://developer.roku.com/en-gb/docs/specs/media/content-protection.md">DRM</a> support.</li>
+        <li>HLS, DASH and MP4 <a href="https://developer.roku.com/en-gb/docs/specs/media/streaming-specifications.md">stream formats</a> support.</li>
+        <li>HLSe (HLS + AES-128 encryption) playback support (v4 manifests only)</li>
+        <li>Multichannel Audio on supported devices (5.1 AC3, 5.1 E-AC3, Dolby Atmos)
+        </li>
+        <li><a href="https://developer.roku.com/en-gb/docs/developer-program/media-playback/voice-controls/transport-controls.md">Voice Controls</a>.</li>
+        <li>Forensic Watermarking</li>
+        <li>Configurable sources and DRM systems prioritization.</li>
+        <li>Multiple Audio Tracks support.</li>
+        <li>Configurable stream buffering timeout.</li>
+        <li>Expired sources refresh (on previous and next playlist functions only).</li>
+        <li>Playback retry on stream error.</li>
+        <li>Brightcove Playback API interfaces
+            <ul>
+                <li>Play or <a href="https://apis.support.brightcove.com/playback/references/reference_v2.html#tag/Videos/operation/Get_Video_by_ID_or_Reference_ID">retrieve a video by video ID</a> or reference.</li>
+                <li>Play or <a href="https://apis.support.brightcove.com/playback/references/reference_v2.html#tag/Videos/operation/Get_Videos">retrieve videos by search query</a>.</li>
+                <li>Play or <a href="https://apis.support.brightcove.com/playback/references/reference_v2.html#tag/Videos/operation/Get_Related_Videos_by_ID_or_Reference_ID">retrieve related videos by video ID</a> or reference.</li>
+                <li>Play or <a href="https://apis.support.brightcove.com/playback/references/reference_v2.html#tag/Playlists/operation/Get_Playlists_by_ID_or_Reference_ID">retrieve videos by playlist ID</a> or reference.</li>
+            </ul>
+        </li>
+        <li>External video and playlist sources support.</li>
+        <li>Utilities
+            <ul>
+                <li>Brightscript general utilities</li>
+                <li>Logging component</li>
+                <li>Dialog component</li>
+            </ul>
+        </li>
+    </ul>
+  </section>
+  <section class="bcls-section">
+    <h2 id="overview">Setup</h2>
+    <p>To setup Brightcove Roku SDK in a Roku channel, you must request access to the SDK package file. Brightcove provides two ways for developers to access the SDK package file.</p>
+    <aside class="bcls-aside bcls-aside--information">Note that in the following examples, <strong>bcLib.pkg</strong> is the Brightcove SDK library package provided by Brightcove.</aside>
+
+    <h3>Loading the library from a remote location</h3>
+    <p>Brightcove provides the SDK package URL in this case, as the package file is hosted in Brightcove servers. The library package is downloaded at runtime by following these simple steps:</p>
+    <ol class="bcls-tasklist">
+        <li>In the scene XML component, create the ComponentLibrary child node and set its <code translate="No">id</code> and <code translate="No">uri</code> fields. 
+            <ul>
+                <li>The <code translate="No">uri</code> field contains the SDK package URL.</li>
+                <li>The <code translate="No">id</code> field is used during the library components initialization.</li>
+            </ul>
+            <pre class="line-numbers">
+                <code class="language-xml" translate="No">&#60;?xml version="1.0" encoding="utf-8" ?&#62; 
+                    &#60;component name="MainScene" extends="Scene"&#62;
+                        &#60;interface&#62;
+                            &#60;!-- your mainscene fields here --&#62;
+                        &#60;/interface&#62;
+                        &#60;script type="text/brightscript" uri="MainScene.brs"/&#62;
+                        &#60;children&#62;
+                            &#60;ComponentLibrary id="bcLib" uri="&#60;https://brightcove/sdk/remote/url/here/bcLib.pkg&#62;" /&#62;
+                        &#60;/children&#62;
+                    &#60;/component&#62;
+                </code></pre>
+        </li>
+        <li>In the <code translate="no">init()</code> function of the Scene's brightscript file, set up the ComponentLibrary reference and an observer for the <code translate="no">loadStatus</code> field so you can detect when the SDK library is successfully downloaded. 
+            <pre class="line-numbers">
+                <code class="language-java" translate="No">sub init()
+                    m.bcLib = m.top.findNode("bcLib")
+                    m.bcLib.observeField("loadStatus", "onLoadStatus")
+                end sub
+                
+                sub onLoadStatus(ev)
+                    status = ev.getData()
+                    if status = "ready" then
+                    
+                        ' bcLib was successfully downloaded and all its components are now accessible
+                    
+                    else if status = "loading" then
+                    
+                        ' bcLib package is currently being downloaded
+                    
+                    else if status = "failed" then
+                    
+                        ' Something went wrong with the bcLib download/load process. 
+                        ' Please check if the package URL was properly set.
+                    
+                    end if
+                end sub
+                </code></pre>
+        </li>
+    </ol>
+    <h3>Loading the library locally</h3>
+    <p>In this case, Brightcove provides the actual SDK package file, which, once downloaded, can be added to the Roku channel file structure. The library is loaded from the internal structure at runtime. Here’s an example:</p>
+    <ol class="bcls-tasklist-restart">
+        <li>Place the SDK package in the Roku channel file structure (in this case, we named it <strong>bcLib.pkg</strong>). The exact location doesn't matter. In the following example, it was placed in the lib directory.
+            <figure class="bcls-figure">
+                <img class="bcls-image" src="/assets/images/s-publishing-apps-img/roku/roku-library/ruku-library-locally.webp" alt="Loading the roku library locally">
+              </figure>
+        </li>
+        <li>In the scene XML component, create the ComponentLibrary child and set the <code translate="No">id</code> and <code translate="No">uri</code> fields. 
+            <ul>
+                <li>The <code translate="No">uri</code> field contains the <strong>bcLib.pkg</strong> file local path.</li>
+                <li>The <code translate="No">id</code> field is used during the library components initialization.</li>
+            </ul>
+            <pre class="line-numbers">
+                <code class="language-xml" translate="No">&#60;?xml version="1.0" encoding="utf-8" ?&#62; 
+                    &#60;component name="MainScene" extends="Scene"&#62;
+                        &#60;interface&#62;
+                            &#60;!-- your mainscene fields here --&#62;
+                        &#60;/interface&#62;
+                        &#60;script type="text/brightscript" uri="MainScene.brs"/&#62;
+                        &#60;children&#62;
+                            &#60;ComponentLibrary id="bcLib" uri="pkg:/lib/bcLib.pkg" /&#62;
+                        &#60;/children&#62;
+                    &#60;/component&#62;
+                </code></pre>
+        </li>
+        <li>In the <code translate="no">init()</code> function of the Scene's brightscript file, set up the ComponentLibrary reference and an observer for the <code translate="no">loadStatus</code> field so you can detect when the SDK library is successfully downloaded. 
+            <pre class="line-numbers">
+                <code class="language-java" translate="No">sub init()
+                    m.bcLib = m.top.findNode("bcLib")
+                    m.bcLib.observeField("loadStatus", "onLoadStatus")
+                end sub
+                
+                sub onLoadStatus(ev)
+                    status = ev.getData()
+                    if status = "ready" then
+                    
+                        ' bcLib was successfully downloaded and all its components are now accessible
+                    
+                    else if status = "loading" then
+                    
+                        ' bcLib package is currently being downloaded
+                    
+                    else if status = "failed" then
+                    
+                        ' Something went wrong with the bcLib download/load process. 
+                        ' Please check if the package URL was properly set.
+                    
+                    end if
+                end sub
+                </code></pre>
+        </li>
+    </ol>
+    <aside class="bcls-aside bcls-aside--information"><ul>
+        <li>Be careful not to reference any library components before the library is completely loaded.</li>
+    </ul></aside>
+    <h3>Loading the library dynamically</h3>
+    <p>It’s recommended to set the ComponentLibrary in the scene’s children section with the proper package URL so that the library loading process starts immediately during the Scene initialization, but depending on the use case, it could also be useful to be able to dynamically load the library anywhere in the channel. This can be done by initializing the ComponentLibrary node in the brightscript code as such:</p>
+    <pre class="line-numbers">
+        <code class="language-java" translate="No">sub init()
+            ' this can be placed anywhere in the Scene node code, 
+            ' although usually we want it to load as soon as possible so we can immediately access its components
+
+            m.bcLib = createObject("roSGNode", "ComponentLibrary")
+            m.bcLib.observeField("loadStatus", "onLoadStatus")
+            m.bcLib.id = "bcLib"
+            m.bcLib.uri = "&#60;path_or_url_to_the_pkg_file&#62;"
+        end sub
+        </code></pre>
+  </section>
+  <section class="bcls-section">
+    <h2 id="accessing-components">Accessing Components</h2>
+    <p>Once the SDK library is successfully loaded, an instance of any of its components can be created like so:</p>
+    <pre class="line-numbers">
+        <code class="language-java" translate="No">
+            ' 1 - create an instance of the bcPlayer node
+            ' This won't make the bcPlayer node visible in the app, it still needs to be added to the node tree list after this step
+
+            m.bcPlayer = createObject("roSGNode", "bcLib:bcPlayer")
+
+            ' 2 - create an instance of the bcPlayer node and append it to the parentNode node.
+            ' If parentNode is already in the node tree list and is visible, this will also make the bcPlayer node visible in the app
+
+            m.bcPlayer = parentNode.createChild("bcLib:bcPlayer")
+        </code></pre>
+  </section>
+  <section class="bcls-section">
+    <h2 id="bcPlayer">bcPlayer component</h2>
+    <p>The <strong>bcPlayer</strong> component is the main SDK node as it enables both Brightcove sources and external sources video playback in Roku channels. This node essentially extends Roku’s native <a href="https://developer.roku.com/en-gb/docs/references/scenegraph/media-playback-nodes/video.md">Video</a> node, allowing all its fields to be easily accessed for further customization options. It is possible to configure the appearance of some elements in the node as well as some behaviors and flows by customizing the node fields values.</p>
+    <p>An instance of this node can be created like so:</p>
+    <pre class="line-numbers">
+    <code class="language-java" translate="No">
+        m.bcPlayer = createObject("roSGNode", "bcLib:bcPlayer")
+    </code></pre>
+    <p>Once an instance of the node is available, it’s possible to customize it by setting up its fields. All the fields default values are listed below.</p>
+    <pre class="line-numbers">
+        <code class="language-java" translate="No">m.bcPlayer = createObject("roSGNode", "bcLib:bcPlayer")
+            m.bcPlayer.setFields({
+              streamPreference: ["hls", "dash", "mp4"],
+              drmPreference: ["widevine", "playready", "none"],
+              logLevel: 4,
+              credentials: {
+                account_id: "...",
+                policy_key: "..."
+              },
+              env: "production",
+              watermarkToken: "",
+              spinnerConfig: {},
+              closeOnBack: true,
+              retryOnError: true,
+              enableDialogs: true,
+              bufferTimeout: 0,
+              dialogTheme: {
+                DialogBackgroundColor: "#00000000",
+                DialogSecondaryItemColor: "#00000000"
+              }
+            })
+        </code></pre>
+        <h3>Fields</h3>
+        <p>The bcPlayer node is configured through a set of fields.  Since it extends the native Video node, all native fields are also accessible; these can be checked out in <a href="https://developer.roku.com/en-gb/docs/references/scenegraph/media-playback-nodes/video.md">Roku documentation</a>.</p>
+  </section>
+</article>
